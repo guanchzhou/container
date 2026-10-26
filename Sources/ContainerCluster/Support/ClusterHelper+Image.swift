@@ -41,13 +41,8 @@ extension ClusterHelper {
 
     // MARK: - Image reference helpers
 
-    static func isShortName(_ reference: String) -> Bool {
-        guard let ref = try? Reference.parse(reference) else { return true }
-        return ref.domain == nil
-    }
-
-    static func fqReference(_ reference: String) -> String {
-        guard let ref = try? Reference.parse(reference) else { return reference }
+    static func fqReference(_ reference: String) throws -> String {
+        let ref = try Reference.parse(reference)
         ref.normalize()
         return ref.description
     }

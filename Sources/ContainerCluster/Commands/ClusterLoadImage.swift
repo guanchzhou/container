@@ -53,6 +53,8 @@ public struct ClusterLoadImage: AsyncParsableCommand {
         LoggingSystem.bootstrap { _ in StderrLogHandler() }
         let log = Logger(label: ClusterHelper.pluginName)
 
+        let fq = try ClusterHelper.fqReference(image)
+
         let tmpFile = FilePath(FileManager.default.temporaryDirectory.path(percentEncoded: false))
             .appending("cluster-image-\(UUID().uuidString).tar")
         defer { try? FileManager.default.removeItem(atPath: tmpFile.string) }
@@ -72,7 +74,6 @@ public struct ClusterLoadImage: AsyncParsableCommand {
         let targets = try Self.resolveTargets(clusterName: name, nodes: node, workers: workers)
 
         log.info("Saving image", metadata: ["ref": "\(image)"])
-        let fq = ClusterHelper.fqReference(image)
         let resolvedPlatform = try platform.map { try Platform(from: $0) } ?? Platform(from: "linux/\(Arch.hostArchitecture().rawValue)")
         try await ClientImage.save(references: [fq], out: tmpFile.string, platform: resolvedPlatform, containerSystemConfig: containerSystemConfig)
 

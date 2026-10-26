@@ -90,3 +90,28 @@ struct ResolveTargetsTests {
         }
     }
 }
+
+// MARK: - ClusterHelper.fqReference
+
+@Suite("ClusterHelper.fqReference")
+struct FQReferenceTests {
+    @Test func referenceWithoutTagGetsLatest() throws {
+        #expect(try ClusterHelper.fqReference("demo-api") == "demo-api:latest")
+    }
+
+    @Test func dockerHubNameGetsLibraryPath() throws {
+        #expect(try ClusterHelper.fqReference("docker.io/nginx") == "docker.io/library/nginx:latest")
+    }
+
+    @Test func qualifiedReferenceIsUnchanged() throws {
+        #expect(try ClusterHelper.fqReference("ghcr.io/acme/demo-api:1.2") == "ghcr.io/acme/demo-api:1.2")
+    }
+
+    @Test(arguments: ["", "Demo-API:latest", "demo-api:", "demo api", String(repeating: "a", count: 64)])
+    func malformedReferenceThrowsInvalidArgument(reference: String) throws {
+        let error = try #require(throws: ContainerizationError.self) {
+            try ClusterHelper.fqReference(reference)
+        }
+        #expect(error.code == .invalidArgument)
+    }
+}
